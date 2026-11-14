@@ -8,4 +8,8 @@ terraform {
       version = "~> 6.0"
     }
   }
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> 51c2577 (Add security monitor and terraform deployment files)

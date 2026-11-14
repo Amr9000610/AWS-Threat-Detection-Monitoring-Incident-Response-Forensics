@@ -1,0 +1,125 @@
+{
+    "Objects":  [
+                    {
+                        "Key":  "cloudtrail/AWSLogs/450505040291/CloudTrail-Digest/",
+                        "VersionId":  "Q4vN7lNE0liFE_5f8ZMAliQ9oZX8oqHl"
+                    },
+                    {
+                        "Key":  "cloudtrail/AWSLogs/450505040291/CloudTrail-Digest/af-south-1/2026/11/13/450505040291_CloudTrail-Digest_af-south-1_aws-threat-detection-account-trail_us-east-1_20261113T230017Z.json.gz",
+                        "VersionId":  "HlAv5PGESibykXzndcaBvKsjHq4vMfZE"
+                    },
+                    {
+                        "Key":  "cloudtrail/AWSLogs/450505040291/CloudTrail-Digest/ap-northeast-1/2026/11/13/450505040291_CloudTrail-Digest_ap-northeast-1_aws-threat-detection-account-trail_us-east-1_20261113T230017Z.json.gz",
+                        "VersionId":  "92vO9N68CQ4pR_EvNy7iTuY2QHEteHSV"
+                    },
+                    {
+                        "Key":  "cloudtrail/AWSLogs/450505040291/CloudTrail-Digest/ap-northeast-2/2026/11/13/450505040291_CloudTrail-Digest_ap-northeast-2_aws-threat-detection-account-trail_us-east-1_20261113T230017Z.json.gz",
+                        "VersionId":  "YcoBJaGQvnSEXzTqTQhKuSjT1A7zMmEj"
+                    },
+                    {
+                        "Key":  "cloudtrail/AWSLogs/450505040291/CloudTrail-Digest/ap-northeast-3/2026/11/13/450505040291_CloudTrail-Digest_ap-northeast-3_aws-threat-detection-account-trail_us-east-1_20261113T230017Z.json.gz",
+                        "VersionId":  "psxDkbQ7f6et..fNpa1tMA5xcW8etYdo"
+                    },
+                    {
+                        "Key":  "cloudtrail/AWSLogs/450505040291/CloudTrail-Digest/ap-south-1/2026/11/13/450505040291_CloudTrail-Digest_ap-south-1_aws-threat-detection-account-trail_us-east-1_20261113T230017Z.json.gz",
+                        "VersionId":  "Amn2OY2U0_GjiJRzx990N7cD54OnqTBM"
+                    },
+                    {
+                        "Key":  "cloudtrail/AWSLogs/450505040291/CloudTrail-Digest/ap-southeast-1/2026/11/13/450505040291_CloudTrail-Digest_ap-southeast-1_aws-threat-detection-account-trail_us-east-1_20261113T230017Z.json.gz",
+                        "VersionId":  "bBLhh1M_7ktAKVnS3Fd5Am1O7JSy47eE"
+                    },
+                    {
+                        "Key":  "cloudtrail/AWSLogs/450505040291/CloudTrail-Digest/ap-southeast-2/2026/11/13/450505040291_CloudTrail-Digest_ap-southeast-2_aws-threat-detection-account-trail_us-east-1_20261113T230017Z.json.gz",
+                        "VersionId":  "lIBmMhiyf1mBCa3x6xbP6r9niybURvPt"
+                    },
+                    {
+                        "Key":  "cloudtrail/AWSLogs/450505040291/CloudTrail-Digest/ca-central-1/2026/11/13/450505040291_CloudTrail-Digest_ca-central-1_aws-threat-detection-account-trail_us-east-1_20261113T230017Z.json.gz",
+                        "VersionId":  "X9gnccJKamgYE8eHhAZCZWQHcHHBZx8o"
+                    },
+                    {
+                        "Key":  "cloudtrail/AWSLogs/450505040291/CloudTrail-Digest/eu-central-1/2026/11/13/450505040291_CloudTrail-Digest_eu-central-1_aws-threat-detection-account-trail_us-east-1_20261113T230017Z.json.gz",
+                        "VersionId":  "WG0BlgLQsNAkPVTmaexDorf85Wtpddi1"
+                    },
+                    {
+                        "Key":  "cloudtrail/AWSLogs/450505040291/CloudTrail-Digest/eu-north-1/2026/11/13/450505040291_CloudTrail-Digest_eu-north-1_aws-threat-detection-account-trail_us-east-1_20261113T230017Z.json.gz",
+                        "VersionId":  "f3lkZqI.7zhccD6OKb34p8LdAIpoPiHg"
+                    },
+                    {
+                        "Key":  "cloudtrail/AWSLogs/450505040291/CloudTrail-Digest/eu-west-1/2026/11/13/450505040291_CloudTrail-Digest_eu-west-1_aws-threat-detection-account-trail_us-east-1_20261113T230017Z.json.gz",
+                        "VersionId":  "UMtxRA1J7esZ2_QafqQ7NyWTkTbWf_jC"
+                    },
+                    {
+                        "Key":  "cloudtrail/AWSLogs/450505040291/CloudTrail-Digest/eu-west-2/2026/11/13/450505040291_CloudTrail-Digest_eu-west-2_aws-threat-detection-account-trail_us-east-1_20261113T230017Z.json.gz",
+                        "VersionId":  "Yi6VrLC6ZXlm__eUJ_0BiB4efkVN3EhZ"
+                    },
+                    {
+                        "Key":  "cloudtrail/AWSLogs/450505040291/CloudTrail-Digest/eu-west-3/2026/11/13/450505040291_CloudTrail-Digest_eu-west-3_aws-threat-detection-account-trail_us-east-1_20261113T230017Z.json.gz",
+                        "VersionId":  "ISviGfRxVCPXVNE15TT43X03PlHPItyP"
+                    },
+                    {
+                        "Key":  "cloudtrail/AWSLogs/450505040291/CloudTrail-Digest/sa-east-1/2026/11/13/450505040291_CloudTrail-Digest_sa-east-1_aws-threat-detection-account-trail_us-east-1_20261113T230017Z.json.gz",
+                        "VersionId":  "ErM8RbfeMLIv2HByY.RyV1xkw1RV4NQu"
+                    },
+                    {
+                        "Key":  "cloudtrail/AWSLogs/450505040291/CloudTrail-Digest/us-east-1/2026/11/13/450505040291_CloudTrail-Digest_us-east-1_aws-threat-detection-account-trail_us-east-1_20261113T230017Z.json.gz",
+                        "VersionId":  "g0S416JV4.uJTvfTJhCVkj_yPwQmVRQY"
+                    },
+                    {
+                        "Key":  "cloudtrail/AWSLogs/450505040291/CloudTrail-Digest/us-east-2/2026/11/13/450505040291_CloudTrail-Digest_us-east-2_aws-threat-detection-account-trail_us-east-1_20261113T230017Z.json.gz",
+                        "VersionId":  "PVN03PubAsKR8OtVYKW7Zze0STPtoV1Q"
+                    },
+                    {
+                        "Key":  "cloudtrail/AWSLogs/450505040291/CloudTrail-Digest/us-west-1/2026/11/13/450505040291_CloudTrail-Digest_us-west-1_aws-threat-detection-account-trail_us-east-1_20261113T230017Z.json.gz",
+                        "VersionId":  ".XAm7lh5rNrq0rRIrpGZwDl4zq3Mzmcp"
+                    },
+                    {
+                        "Key":  "cloudtrail/AWSLogs/450505040291/CloudTrail-Digest/us-west-2/2026/11/13/450505040291_CloudTrail-Digest_us-west-2_aws-threat-detection-account-trail_us-east-1_20261113T230017Z.json.gz",
+                        "VersionId":  "frEOnduyrxxiTAkyt8GD7CwygITY_5Fh"
+                    },
+                    {
+                        "Key":  "cloudtrail/AWSLogs/450505040291/CloudTrail/",
+                        "VersionId":  "KdAHneXObgOknCdXYkwgX3bXEPUOe1Yr"
+                    },
+                    {
+                        "Key":  "cloudtrail/AWSLogs/450505040291/CloudTrail/",
+                        "VersionId":  "UApQuYEIuOTdEd9ZWd8UnmY45J6Wxwdy"
+                    },
+                    {
+                        "Key":  "cloudtrail/AWSLogs/450505040291/CloudTrail/",
+                        "VersionId":  "mVe1Y39kMSLsOnM42_SkN9MZsew4__O0"
+                    },
+                    {
+                        "Key":  "cloudtrail/AWSLogs/450505040291/CloudTrail/ca-central-1/2026/11/13/450505040291_CloudTrail_ca-central-1_20261113T2310Z_gkBTD9paN5ScaODB.json.gz",
+                        "VersionId":  "uwZjwKxI3_ScCeZlloJxM.Xb_2RiGeox"
+                    },
+                    {
+                        "Key":  "cloudtrail/AWSLogs/450505040291/CloudTrail/us-east-1/2026/11/13/450505040291_CloudTrail_us-east-1_20261113T2305Z_4DSYSIdJozqaJrVz.json.gz",
+                        "VersionId":  "MHHdN_tzB1f0DrLP8_wKXzicjAEcwues"
+                    },
+                    {
+                        "Key":  "cloudtrail/AWSLogs/450505040291/CloudTrail/us-east-1/2026/11/13/450505040291_CloudTrail_us-east-1_20261113T2305Z_TWN1KcLf4LYz6Fjz.json.gz",
+                        "VersionId":  "ysWjL5ag5OS3zSIbxR905XgAb8QCZT.K"
+                    },
+                    {
+                        "Key":  "cloudtrail/AWSLogs/450505040291/CloudTrail/us-east-1/2026/11/13/450505040291_CloudTrail_us-east-1_20261113T2305Z_Vw96lM9UTvhMy9ei.json.gz",
+                        "VersionId":  "ho_us2XXQ8.40a4lrSZOxmksX6ufOerj"
+                    },
+                    {
+                        "Key":  "cloudtrail/AWSLogs/450505040291/CloudTrail/us-east-1/2026/11/13/450505040291_CloudTrail_us-east-1_20261113T2310Z_CRH9IjCBWpYBlCcg.json.gz",
+                        "VersionId":  "RN_7PEp0uKBy41vyoD_3k9S04eANalv7"
+                    },
+                    {
+                        "Key":  "cloudtrail/AWSLogs/450505040291/CloudTrail/us-east-1/2026/11/13/450505040291_CloudTrail_us-east-1_20261113T2310Z_nkxWe2bGEW0k0PaP.json.gz",
+                        "VersionId":  "xR_W_sELIoW4KOyQjfrirsTsLS2aKIFA"
+                    },
+                    {
+                        "Key":  "cloudtrail/AWSLogs/450505040291/CloudTrail/us-east-1/2026/11/13/450505040291_CloudTrail_us-east-1_20261113T2315Z_DSY2CYEzDRl2ompf.json.gz",
+                        "VersionId":  "BlEScCxjruM9AebIhg__nPSuIYuzmfhA"
+                    },
+                    {
+                        "Key":  "cloudtrail/AWSLogs/450505040291/CloudTrail/us-east-1/2026/11/13/450505040291_CloudTrail_us-east-1_20261113T2315Z_rrd5lJoXLdQKVJGq.json.gz",
+                        "VersionId":  "dofuR9ybjjHzHa7o9m7i6BAAZyOV3eL."
+                    }
+                ],
+    "Quiet":  true
+}
