@@ -78,6 +78,9 @@ resource "aws_s3_bucket_policy" "central_logs" {
           StringEquals = {
             "s3:x-amz-acl" = "bucket-owner-full-control"
           }
+          ArnLike = {
+            "aws:SourceArn" = "arn:${local.partition}:cloudtrail:${var.aws_region}:${local.account_id}:trail/${var.project_name}-account-trail"
+          }
         }
       },
       {

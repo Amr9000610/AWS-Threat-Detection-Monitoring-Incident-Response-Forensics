@@ -47,3 +47,21 @@ output "athena_database_name" {
 output "athena_workgroup_name" {
   value = aws_athena_workgroup.security.name
 }
+
+output "cloudtrail_glue_database_name" {
+  value = aws_glue_catalog_database.cloudtrail.name
+}
+
+output "cloudtrail_glue_table_name" {
+  value = aws_glue_catalog_table.cloudtrail.name
+}
+
+output "security_alerts_sns_topic_arn" {
+  description = "SNS topic ARN used by CloudWatch security alarms."
+  value       = aws_sns_topic.security_alerts.arn
+}
+
+output "security_alerts_email_subscription" {
+  description = "Email endpoint subscribed to security alerts; confirm the AWS subscription email."
+  value       = aws_sns_topic_subscription.security_alerts_email.endpoint
+}

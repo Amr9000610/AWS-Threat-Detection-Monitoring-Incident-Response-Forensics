@@ -49,3 +49,9 @@ variable "enable_s3_server_access_logging" {
   type        = bool
   default     = true
 }
+
+variable "elb_logs_prefix" {
+  description = "Prefix inside the ELB logs bucket for ALB/NLB access logs. Leave empty for no prefix."
+  type        = string
+  default     = "alb"
+}

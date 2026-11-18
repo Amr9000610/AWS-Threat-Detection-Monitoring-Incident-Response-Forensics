@@ -45,6 +45,26 @@ resource "aws_cloudtrail" "account_trail" {
   cloud_watch_logs_group_arn = "${aws_cloudwatch_log_group.cloudtrail.arn}:*"
   cloud_watch_logs_role_arn  = aws_iam_role.cloudtrail_to_cloudwatch.arn
 
+  # Capture S3 object-level API activity for the application data bucket.
+  advanced_event_selector {
+    name = "S3 object-level data events"
+
+    field_selector {
+      field  = "eventCategory"
+      equals = ["Data"]
+    }
+
+    field_selector {
+      field  = "resources.type"
+      equals = ["AWS::S3::Object"]
+    }
+
+    field_selector {
+      field       = "resources.ARN"
+      starts_with = ["${aws_s3_bucket.application_data.arn}/"]
+    }
+  }
+
   depends_on = [
     aws_s3_bucket_policy.central_logs,
     aws_iam_role_policy.cloudtrail_to_cloudwatch
