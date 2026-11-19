@@ -1,5 +1,39 @@
+
+# Terraform working directory
 .terraform/
+
+# Terraform state files
 *.tfstate
 *.tfstate.*
 *.tfplan
+*.tfstate.backup
+
+# Terraform crash logs
 crash.log
+crash.*.log
+
+# Terraform variable files (may contain sensitive values)
+*.tfvars
+*.tfvars.json
+
+# Keep safe example templates
+!*.tfvars.example
+
+# Local AWS credentials and configuration
+.aws/
+.aws/credentials
+.aws/config
+# Environment variables and secrets
+.env
+.env.*
+!.env.example
+
+# Private keys
+*.pem
+*.key
+
+# Editor and operating system files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
