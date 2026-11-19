@@ -1,57 +1,43 @@
 
 # ============================================================
-# WEEK 2 - THREAT DETECTION SERVICES
-# Amazon GuardDuty, Security Hub, Detective, Inspector, Macie
-# AWS Config managed rules
-#
-# Reuses Week 1 resources:
-# - data.aws_caller_identity.current
-# - data.aws_partition.current
-# - aws_config_configuration_recorder_status.main
-# - aws_s3_bucket.application_data
+# WEEK 2 - Threat Detection, Monitoring & Security
+# Project: DEPI Team 5
+# AWS Provider: ~> 6.0
+# Region: us-east-1
 # ============================================================
 
-# Current AWS region (used in Security Hub standard ARNs).
+data "aws_caller_identity" "week2" {}
+
+data "aws_partition" "week2" {}
+
 data "aws_region" "week2" {}
 
 # ------------------------------------------------------------
-# 1. AMAZON GUARDDUTY
+# 1. Amazon GuardDuty
 # ------------------------------------------------------------
 
 resource "aws_guardduty_detector" "week2" {
-  enable                       = true
+  enable = true
+
   finding_publishing_frequency = "FIFTEEN_MINUTES"
-
-  tags = {
-    Name        = "${var.project_name}-guardduty"
-    Environment = var.environment
-    Week        = "2"
-  }
 }
 
 # ------------------------------------------------------------
-# 2. AWS SECURITY HUB
+# 2. AWS Security Hub
 # ------------------------------------------------------------
 
-resource "aws_securityhub_account" "week2" {
-  enable_default_standards = false
-  auto_enable_controls     = true
+resource "aws_securityhub_account" "week2" {}
 
-  control_finding_generator = "SECURITY_CONTROL"
-}
-
-# AWS Foundational Security Best Practices.
-resource "aws_securityhub_standards_subscription" "aws_foundational" {
-  standards_arn = "arn:${data.aws_partition.current.partition}:securityhub:${data.aws_region.week2.region}::standards/aws-foundational-security-best-practices/v/1.0.0"
+resource "aws_securityhub_standards_subscription" "foundational" {
+  standards_arn = "arn:${data.aws_partition.week2.partition}:securityhub:${data.aws_region.week2.region}::standards/aws-foundational-security-best-practices/v/1.0.0"
 
   depends_on = [
     aws_securityhub_account.week2
   ]
 }
 
-# CIS AWS Foundations Benchmark v1.4.0.
-resource "aws_securityhub_standards_subscription" "cis_1_4" {
-  standards_arn = "arn:${data.aws_partition.current.partition}:securityhub:${data.aws_region.week2.region}::standards/cis-aws-foundations-benchmark/v/1.4.0"
+resource "aws_securityhub_standards_subscription" "cis" {
+  standards_arn = "arn:${data.aws_partition.week2.partition}:securityhub:${data.aws_region.week2.region}::standards/cis-aws-foundations-benchmark/v/1.4.0"
 
   depends_on = [
     aws_securityhub_account.week2
@@ -59,24 +45,18 @@ resource "aws_securityhub_standards_subscription" "cis_1_4" {
 }
 
 # ------------------------------------------------------------
-# 3. AMAZON DETECTIVE
+# 3. Amazon Detective
 # ------------------------------------------------------------
 
-resource "aws_detective_graph" "week2" {
-  tags = {
-    Name        = "${var.project_name}-detective"
-    Environment = var.environment
-    Week        = "2"
-  }
-}
+resource "aws_detective_graph" "week2" {}
 
 # ------------------------------------------------------------
-# 4. AMAZON INSPECTOR
+# 4. Amazon Inspector
 # ------------------------------------------------------------
 
 resource "aws_inspector2_enabler" "week2" {
   account_ids = [
-    data.aws_caller_identity.current.account_id
+    data.aws_caller_identity.week2.account_id
   ]
 
   resource_types = [
@@ -87,173 +67,182 @@ resource "aws_inspector2_enabler" "week2" {
 }
 
 # ------------------------------------------------------------
-# 5. AMAZON MACIE
+# 5. Amazon Macie
 # ------------------------------------------------------------
 
 resource "aws_macie2_account" "week2" {
   finding_publishing_frequency = "FIFTEEN_MINUTES"
-  status                       = "ENABLED"
 }
 
-# One-time sensitive-data discovery job for the application bucket.
-# The bucket is created by the Week 1 configuration.
-resource "aws_macie2_classification_job" "application_bucket_scan" {
-  name     = "${var.project_name}-application-data-scan"
-  job_type = "ONE_TIME"
+# ------------------------------------------------------------
+# 6. AWS Config IAM Role
+# ------------------------------------------------------------
 
-  s3_job_definition {
-    bucket_definitions {
-      account_id = data.aws_caller_identity.current.account_id
-      buckets = [
-        aws_s3_bucket.application_data.id
-      ]
+resource "aws_iam_role" "config_role" {
+  name = "depi-team5-aws-config-role"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Effect = "Allow"
+      Principal = {
+        Service = "config.amazonaws.com"
+      }
+      Action = "sts:AssumeRole"
+    }]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "config_policy" {
+  role = aws_iam_role.config_role.name
+
+  policy_arn = "arn:${data.aws_partition.week2.partition}:iam::aws:policy/service-role/AWS_ConfigRole"
+}
+
+# ------------------------------------------------------------
+# 7. AWS Config S3 Bucket Policy
+# Uses existing project_logs_bucket from data.tf
+# ------------------------------------------------------------
+
+data "aws_iam_policy_document" "config_bucket_policy" {
+  statement {
+    sid    = "AWSConfigBucketPermissionsCheck"
+    effect = "Allow"
+
+    principals {
+      type        = "Service"
+      identifiers = ["config.amazonaws.com"]
     }
+
+    actions = [
+      "s3:GetBucketAcl"
+    ]
+
+    resources = [
+      aws_s3_bucket.project_logs_bucket.arn
+    ]
+  }
+
+  statement {
+    sid    = "AWSConfigBucketDelivery"
+    effect = "Allow"
+
+    principals {
+      type        = "Service"
+      identifiers = ["config.amazonaws.com"]
+    }
+
+    actions = [
+      "s3:PutObject"
+    ]
+
+    resources = [
+      "${aws_s3_bucket.project_logs_bucket.arn}/AWSLogs/${data.aws_caller_identity.week2.account_id}/Config/*"
+    ]
+
+    condition {
+      test     = "StringEquals"
+      variable = "s3:x-amz-acl"
+      values   = ["bucket-owner-full-control"]
+    }
+  }
+}
+
+resource "aws_s3_bucket_policy" "config_bucket_policy" {
+  bucket = aws_s3_bucket.project_logs_bucket.id
+  policy = data.aws_iam_policy_document.config_bucket_policy.json
+}
+
+# ------------------------------------------------------------
+# 8. AWS Config Recorder
+# ------------------------------------------------------------
+
+resource "aws_config_configuration_recorder" "week2" {
+  name     = "depi-team5-config-recorder"
+  role_arn = aws_iam_role.config_role.arn
+
+  recording_group {
+    all_supported                 = true
+    include_global_resource_types = true
   }
 
   depends_on = [
-    aws_macie2_account.week2,
-    aws_s3_bucket.application_data
+    aws_iam_role_policy_attachment.config_policy
+  ]
+}
+
+resource "aws_config_delivery_channel" "week2" {
+  name           = "depi-team5-config-delivery"
+  s3_bucket_name = aws_s3_bucket.project_logs_bucket.id
+  s3_key_prefix  = "AWSLogs/${data.aws_caller_identity.week2.account_id}/Config"
+
+  depends_on = [
+    aws_s3_bucket_policy.config_bucket_policy
+  ]
+}
+
+resource "aws_config_configuration_recorder_status" "week2" {
+  name       = aws_config_configuration_recorder.week2.name
+  is_enabled = true
+
+  depends_on = [
+    aws_config_delivery_channel.week2
   ]
 }
 
 # ------------------------------------------------------------
-# 6. AWS CONFIG - WEEK 2 SECURITY RULES
+# 9. AWS Config Managed Security Rules
 # ------------------------------------------------------------
-
-# The Config recorder and delivery channel are already created
-# in config.tf (Week 1). These rules depend on the recorder
-# being enabled before AWS Config evaluates them.
 
 locals {
   week2_config_rules = {
-    root_account_mfa = {
-      name              = "root-account-mfa-enabled"
-      source_identifier = "ROOT_ACCOUNT_MFA_ENABLED"
-      description       = "Checks whether MFA is enabled for the AWS root account."
-    }
-
-    iam_user_mfa = {
-      name              = "iam-user-mfa-enabled"
-      source_identifier = "IAM_USER_MFA_ENABLED"
-      description       = "Checks whether IAM users have MFA enabled."
-    }
-
-    iam_password_policy = {
-      name              = "iam-password-policy"
-      source_identifier = "IAM_PASSWORD_POLICY"
-      description       = "Checks whether the account password policy follows security requirements."
-    }
-
-    encrypted_volumes = {
-      name              = "encrypted-volumes"
-      source_identifier = "ENCRYPTED_VOLUMES"
-      description       = "Checks whether attached EBS volumes are encrypted."
-    }
-
-    restricted_ssh = {
-      name              = "restricted-ssh"
-      source_identifier = "INCOMING_SSH_DISABLED"
-      description       = "Checks whether security groups allow unrestricted SSH access."
-    }
-
-    cloudtrail_enabled = {
-      name              = "cloudtrail-enabled"
-      source_identifier = "CLOUD_TRAIL_ENABLED"
-      description       = "Checks whether CloudTrail is enabled."
-    }
-
-    s3_public_read_prohibited = {
-      name              = "s3-public-read-prohibited"
-      source_identifier = "S3_BUCKET_PUBLIC_READ_PROHIBITED"
-      description       = "Checks whether S3 buckets allow public read access."
-    }
-
-    s3_public_write_prohibited = {
-      name              = "s3-public-write-prohibited"
-      source_identifier = "S3_BUCKET_PUBLIC_WRITE_PROHIBITED"
-      description       = "Checks whether S3 buckets allow public write access."
-    }
-
-    access_keys_rotated = {
-      name              = "iam-access-keys-rotated"
-      source_identifier = "ACCESS_KEYS_ROTATED"
-      description       = "Checks whether IAM access keys are rotated within the required period."
-    }
-
-    default_security_group_closed = {
-      name              = "vpc-default-security-group-closed"
-      source_identifier = "VPC_DEFAULT_SECURITY_GROUP_CLOSED"
-      description       = "Checks whether the default VPC security group restricts inbound and outbound traffic."
-    }
-
-    rds_storage_encrypted = {
-      name              = "rds-storage-encrypted"
-      source_identifier = "RDS_STORAGE_ENCRYPTED"
-      description       = "Checks whether RDS DB instances have storage encryption enabled."
-    }
-
-    cloudtrail_log_validation = {
-      name              = "cloudtrail-log-file-validation-enabled"
-      source_identifier = "CLOUD_TRAIL_LOG_FILE_VALIDATION_ENABLED"
-      description       = "Checks whether CloudTrail log file validation is enabled."
-    }
+    s3_public_read          = "S3_BUCKET_PUBLIC_READ_PROHIBITED"
+    s3_public_write         = "S3_BUCKET_PUBLIC_WRITE_PROHIBITED"
+    s3_encryption           = "S3_BUCKET_SERVER_SIDE_ENCRYPTION_ENABLED"
+    encrypted_volumes       = "ENCRYPTED_VOLUMES"
+    root_mfa                = "ROOT_ACCOUNT_MFA_ENABLED"
+    iam_user_mfa            = "IAM_USER_MFA_ENABLED"
+    cloudtrail_enabled      = "CLOUD_TRAIL_ENABLED"
+    multi_region_cloudtrail = "MULTI_REGION_CLOUD_TRAIL_ENABLED"
+    guardduty_enabled       = "GUARDDUTY_ENABLED"
+    default_sg_closed       = "VPC_DEFAULT_SECURITY_GROUP_CLOSED"
+    restricted_ssh          = "INCOMING_SSH_DISABLED"
   }
 }
 
 resource "aws_config_config_rule" "week2" {
   for_each = local.week2_config_rules
 
-  name        = "${var.project_name}-${each.value.name}"
-  description = each.value.description
+  name = each.key
 
   source {
     owner             = "AWS"
-    source_identifier = each.value.source_identifier
+    source_identifier = each.value
   }
 
   depends_on = [
-    aws_config_configuration_recorder_status.main
+    aws_config_configuration_recorder_status.week2
   ]
 }
 
 # ------------------------------------------------------------
-# 7. WEEK 2 OUTPUTS
+# 10. Outputs
 # ------------------------------------------------------------
 
 output "week2_guardduty_detector_id" {
-  description = "GuardDuty detector ID."
-  value       = aws_guardduty_detector.week2.id
-}
-
-output "week2_security_hub_arn" {
-  description = "Security Hub account ARN."
-  value       = aws_securityhub_account.week2.arn
-}
-
-output "week2_security_hub_standards" {
-  description = "Enabled Security Hub standards."
-  value = [
-    aws_securityhub_standards_subscription.aws_foundational.standards_arn,
-    aws_securityhub_standards_subscription.cis_1_4.standards_arn
-  ]
+  value = aws_guardduty_detector.week2.id
 }
 
 output "week2_detective_graph_arn" {
-  description = "Amazon Detective graph ARN."
-  value       = aws_detective_graph.week2.graph_arn
+  value = aws_detective_graph.week2.graph_arn
 }
 
-output "week2_inspector_account_id" {
-  description = "Account ID enabled in Amazon Inspector."
-  value       = aws_inspector2_enabler.week2.account_ids
-}
-
-output "week2_macie_classification_job_id" {
-  description = "Macie one-time classification job ID."
-  value       = aws_macie2_classification_job.application_bucket_scan.id
+output "week2_macie_account_id" {
+  value = aws_macie2_account.week2.id
 }
 
 output "week2_config_rule_names" {
-  description = "AWS Config rules created for Week 2."
-  value       = [for rule in aws_config_config_rule.week2 : rule.name]
+  value = [
+    for rule in aws_config_config_rule.week2 : rule.name
+  ]
 }
