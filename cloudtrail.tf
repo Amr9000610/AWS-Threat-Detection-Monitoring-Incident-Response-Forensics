@@ -2,7 +2,11 @@ resource "aws_iam_role" "cloudtrail_to_cloudwatch" {
   name = "${var.project_name}-cloudtrail-cw-role"
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
-    Statement = [{ Effect = "Allow", Principal = { Service = "cloudtrail.amazonaws.com" }, Action = "sts:AssumeRole" }]
+    Statement = [{
+      Effect = "Allow"
+      Principal = { Service = "cloudtrail.amazonaws.com" }
+      Action = "sts:AssumeRole"
+    }]
   })
 }
 resource "aws_iam_role_policy" "cloudtrail_to_cloudwatch" {
@@ -10,7 +14,11 @@ resource "aws_iam_role_policy" "cloudtrail_to_cloudwatch" {
   role = aws_iam_role.cloudtrail_to_cloudwatch.id
   policy = jsonencode({
     Version = "2012-10-17"
-    Statement = [{ Effect = "Allow", Action = ["logs:CreateLogStream", "logs:PutLogEvents"], Resource = "${aws_cloudwatch_log_group.cloudtrail.arn}:*" }]
+    Statement = [{
+      Effect = "Allow"
+      Action = ["logs:CreateLogStream", "logs:PutLogEvents"]
+      Resource = "${aws_cloudwatch_log_group.cloudtrail.arn}:*"
+    }]
   })
 }
 resource "aws_cloudtrail" "account_trail" {
@@ -24,15 +32,33 @@ resource "aws_cloudtrail" "account_trail" {
   enable_log_file_validation    = true
   cloud_watch_logs_group_arn    = "${aws_cloudwatch_log_group.cloudtrail.arn}:*"
   cloud_watch_logs_role_arn     = aws_iam_role.cloudtrail_to_cloudwatch.arn
+
   advanced_event_selector {
     name = "All management events"
-    field_selector { field = "eventCategory" equals = ["Management"] }
+    field_selector {
+      field  = "eventCategory"
+      equals = ["Management"]
+    }
   }
+
   advanced_event_selector {
     name = "S3 object-level data events"
-    field_selector { field = "eventCategory" equals = ["Data"] }
-    field_selector { field = "resources.type" equals = ["AWS::S3::Object"] }
-    field_selector { field = "resources.ARN" starts_with = ["${aws_s3_bucket.application_data.arn}/"] }
+    field_selector {
+      field  = "eventCategory"
+      equals = ["Data"]
+    }
+    field_selector {
+      field  = "resources.type"
+      equals = ["AWS::S3::Object"]
+    }
+    field_selector {
+      field       = "resources.ARN"
+      starts_with = ["${aws_s3_bucket.application_data.arn}/"]
+    }
   }
-  depends_on = [aws_s3_bucket_policy.central_logs, aws_iam_role_policy.cloudtrail_to_cloudwatch]
+
+  depends_on = [
+    aws_s3_bucket_policy.central_logs,
+    aws_iam_role_policy.cloudtrail_to_cloudwatch
+  ]
 }
