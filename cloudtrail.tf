@@ -3,9 +3,9 @@ resource "aws_iam_role" "cloudtrail_to_cloudwatch" {
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
     Statement = [{
-      Effect = "Allow"
+      Effect    = "Allow"
       Principal = { Service = "cloudtrail.amazonaws.com" }
-      Action = "sts:AssumeRole"
+      Action    = "sts:AssumeRole"
     }]
   })
 }
@@ -15,8 +15,8 @@ resource "aws_iam_role_policy" "cloudtrail_to_cloudwatch" {
   policy = jsonencode({
     Version = "2012-10-17"
     Statement = [{
-      Effect = "Allow"
-      Action = ["logs:CreateLogStream", "logs:PutLogEvents"]
+      Effect   = "Allow"
+      Action   = ["logs:CreateLogStream", "logs:PutLogEvents"]
       Resource = "${aws_cloudwatch_log_group.cloudtrail.arn}:*"
     }]
   })
