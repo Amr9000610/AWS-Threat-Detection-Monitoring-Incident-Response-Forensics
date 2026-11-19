@@ -1,0 +1,15 @@
+aws_region   = "us-east-1"
+project_name = "aws-threat-detection"
+environment  = "lab"
+
+# Enable only after providing a real VPC ID in the same region.
+enable_vpc_flow_logs = false
+vpc_id               = ""
+
+# Optional: provide an email address you control and confirm the subscription.
+alert_email = ""
+
+log_retention_days        = 365
+cloudwatch_retention_days = 90
+enable_s3_server_access_logging = true
+elb_logs_prefix = "alb"
