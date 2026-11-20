@@ -4,7 +4,7 @@
 # ============================================================
 
 resource "aws_guardduty_detector" "week2" {
-  enable                        = true
+  enable                       = true
   finding_publishing_frequency = "FIFTEEN_MINUTES"
 }
 
