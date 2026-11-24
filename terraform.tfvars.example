@@ -13,6 +13,7 @@ enable_week2_macie               = false
 enable_vpc_flow_logs              = false
 enable_s3_server_access_logging   = false
 enable_week3_lab_ec2              = false
+week3_subnet_id                   = ""
 
 vpc_id     = ""
 alert_email = ""
