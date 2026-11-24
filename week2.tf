@@ -4,33 +4,41 @@
 # ============================================================
 
 resource "aws_guardduty_detector" "week2" {
+  count                        = var.enable_week2_guardduty ? 1 : 0
   enable                       = true
   finding_publishing_frequency = "FIFTEEN_MINUTES"
 }
 
 # Declare standards explicitly; disable automatic defaults to avoid duplicates.
 resource "aws_securityhub_account" "week2" {
+  count                  = var.enable_week2_securityhub ? 1 : 0
   enable_default_standards = false
 }
 
 resource "aws_securityhub_standards_subscription" "foundational" {
+  count         = var.enable_week2_securityhub ? 1 : 0
   standards_arn = "arn:${local.partition}:securityhub:${var.aws_region}::standards/aws-foundational-security-best-practices/v/1.0.0"
   depends_on    = [aws_securityhub_account.week2]
 }
 
 resource "aws_securityhub_standards_subscription" "cis" {
+  count         = var.enable_week2_securityhub ? 1 : 0
   standards_arn = "arn:${local.partition}:securityhub:${var.aws_region}::standards/cis-aws-foundations-benchmark/v/1.4.0"
   depends_on    = [aws_securityhub_account.week2]
 }
 
-resource "aws_detective_graph" "week2" {}
+resource "aws_detective_graph" "week2" {
+  count = var.enable_week2_detective ? 1 : 0
+}
 
 resource "aws_inspector2_enabler" "week2" {
+  count          = var.enable_week2_inspector ? 1 : 0
   account_ids    = [local.account_id]
   resource_types = ["EC2", "ECR", "LAMBDA"]
 }
 
 resource "aws_macie2_account" "week2" {
+  count                       = var.enable_week2_macie ? 1 : 0
   finding_publishing_frequency = "FIFTEEN_MINUTES"
 }
 
@@ -53,7 +61,7 @@ locals {
 }
 
 resource "aws_config_config_rule" "week2" {
-  for_each = local.week2_config_rules
+  for_each = var.enable_aws_config ? local.week2_config_rules : {}
   name     = "${var.project_name}-${each.key}"
 
   source {
@@ -66,17 +74,17 @@ resource "aws_config_config_rule" "week2" {
 
 output "week2_guardduty_detector_id" {
   description = "GuardDuty detector ID for this account and Region."
-  value       = aws_guardduty_detector.week2.id
+  value       = try(aws_guardduty_detector.week2[0].id, null)
 }
 
 output "week2_detective_graph_arn" {
   description = "Amazon Detective behavior graph ARN."
-  value       = aws_detective_graph.week2.graph_arn
+  value       = try(aws_detective_graph.week2[0].graph_arn, null)
 }
 
 output "week2_macie_account_id" {
   description = "Amazon Macie account ID."
-  value       = aws_macie2_account.week2.id
+  value       = try(aws_macie2_account.week2[0].id, null)
 }
 
 output "week2_config_rule_names" {
