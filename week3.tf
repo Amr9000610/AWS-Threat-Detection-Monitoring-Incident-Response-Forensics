@@ -10,15 +10,13 @@
 
 # Use var.vpc_id if provided in terraform.tfvars; otherwise fall back to the default VPC.
 data "aws_vpc" "week3_default" {
-  count   = var.vpc_id == "" ? 1 : 0
+  count   = var.vpc_id == "" && !var.enable_week3_lab_ec2 ? 1 : 0
   default = true
 }
 
-data "aws_subnets" "week3_target" {
-  filter {
-    name   = "vpc-id"
-    values = [local.week3_vpc_id]
-  }
+data "aws_subnet" "week3_target" {
+  count = var.enable_week3_lab_ec2 ? 1 : 0
+  id    = var.week3_subnet_id
 }
 
 data "aws_ami" "week3_al2023" {
@@ -42,8 +40,10 @@ data "aws_ami" "week3_al2023" {
 }
 
 locals {
-  week3_vpc_id               = var.vpc_id != "" ? var.vpc_id : data.aws_vpc.week3_default[0].id
-  week3_subnet_id            = sort(data.aws_subnets.week3_target.ids)[0]
+  week3_vpc_id = var.vpc_id != "" ? var.vpc_id : (
+    var.enable_week3_lab_ec2 ? data.aws_subnet.week3_target[0].vpc_id : data.aws_vpc.week3_default[0].id
+  )
+  week3_subnet_id            = var.week3_subnet_id
   week3_evidence_bucket_name = "${var.project_name}-ir-evidence-${local.suffix}"
   week3_sim_s3_bucket_name   = "${var.project_name}-ir-sim-public-${local.suffix}"
 }
@@ -195,7 +195,14 @@ resource "aws_instance" "week3_lab_target" {
   subnet_id              = local.week3_subnet_id
   vpc_security_group_ids = [aws_security_group.week3_lab_ec2.id]
   iam_instance_profile   = aws_iam_instance_profile.week3_lab_ec2[0].name
-  associate_public_ip_address = true
+  associate_public_ip_address = false
+
+  lifecycle {
+    precondition {
+      condition     = data.aws_subnet.week3_target[0].vpc_id == local.week3_vpc_id
+      error_message = "week3_subnet_id must belong to the VPC selected by vpc_id."
+    }
+  }
 
   metadata_options {
     http_endpoint               = "enabled"
