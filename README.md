@@ -29,7 +29,7 @@ Set only the features you intend to test in your local, uncommitted `terraform.t
 - `enable_week2_macie = true`
 - `enable_vpc_flow_logs = true` only with a valid `vpc_id`
 - `enable_s3_server_access_logging = true`
-- `enable_week3_lab_ec2 = true` only after verifying subnet routing and SSM connectivity
+- `enable_week3_lab_ec2 = true` only with an explicit `week3_subnet_id` and verified SSM connectivity; keep `associate_public_ip_address = false`
 
 Do not enable every flag at once on a Free Tier account.
 
