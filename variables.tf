@@ -33,6 +33,17 @@ variable "vpc_id" {
   }
 }
 
+variable "week3_subnet_id" {
+  description = "Explicit subnet ID for the optional Week 3 EC2 lab instance."
+  type        = string
+  default     = ""
+
+  validation {
+    condition     = !var.enable_week3_lab_ec2 || can(regex("^subnet-[0-9a-f]+$", var.week3_subnet_id))
+    error_message = "Set a valid week3_subnet_id when enable_week3_lab_ec2 is true."
+  }
+}
+
 variable "alert_email" {
   description = "Optional notification email. Empty disables email subscription."
   type        = string
