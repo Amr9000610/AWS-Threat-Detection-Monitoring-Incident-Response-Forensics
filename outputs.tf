@@ -19,7 +19,7 @@ output "vpc_flow_cloudwatch_log_group" {
   value = try(aws_cloudwatch_log_group.vpc_flow[0].name, null)
 }
 output "config_recorder_name" {
-  value = aws_config_configuration_recorder.main.name
+  value = try(aws_config_configuration_recorder.main[0].name, null)
 }
 output "s3_access_logs_bucket_name" {
   value = aws_s3_bucket.s3_access_logs.bucket

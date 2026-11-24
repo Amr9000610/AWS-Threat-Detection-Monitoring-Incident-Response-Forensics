@@ -41,19 +41,24 @@ resource "aws_cloudtrail" "account_trail" {
     }
   }
 
-  advanced_event_selector {
-    name = "S3 object-level data events"
-    field_selector {
-      field  = "eventCategory"
-      equals = ["Data"]
-    }
-    field_selector {
-      field  = "resources.type"
-      equals = ["AWS::S3::Object"]
-    }
-    field_selector {
-      field       = "resources.ARN"
-      starts_with = ["${aws_s3_bucket.application_data.arn}/"]
+  dynamic "advanced_event_selector" {
+    for_each = var.enable_cloudtrail_s3_data_events ? [1] : []
+
+    content {
+      name = "S3 object-level data events"
+
+      field_selector {
+        field  = "eventCategory"
+        equals = ["Data"]
+      }
+      field_selector {
+        field  = "resources.type"
+        equals = ["AWS::S3::Object"]
+      }
+      field_selector {
+        field       = "resources.ARN"
+        starts_with = ["${aws_s3_bucket.application_data.arn}/"]
+      }
     }
   }
 

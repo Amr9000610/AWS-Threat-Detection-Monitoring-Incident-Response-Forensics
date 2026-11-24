@@ -33,6 +33,17 @@ variable "vpc_id" {
   }
 }
 
+variable "week3_subnet_id" {
+  description = "Explicit subnet ID for the optional Week 3 EC2 lab instance."
+  type        = string
+  default     = ""
+
+  validation {
+    condition     = !var.enable_week3_lab_ec2 || can(regex("^subnet-[0-9a-f]+$", var.week3_subnet_id))
+    error_message = "Set a valid week3_subnet_id when enable_week3_lab_ec2 is true."
+  }
+}
+
 variable "alert_email" {
   description = "Optional notification email. Empty disables email subscription."
   type        = string
@@ -47,13 +58,13 @@ variable "alert_email" {
 variable "log_retention_days" {
   description = "S3 log retention days."
   type        = number
-  default     = 365
+  default     = 30
 }
 
 variable "cloudwatch_retention_days" {
   description = "CloudWatch retention days."
   type        = number
-  default     = 90
+  default     = 7
 }
 
 variable "enable_vpc_flow_logs" {
@@ -65,7 +76,49 @@ variable "enable_vpc_flow_logs" {
 variable "enable_s3_server_access_logging" {
   description = "Enable S3 server access logging."
   type        = bool
-  default     = true
+  default     = false
+}
+
+variable "enable_cloudtrail_s3_data_events" {
+  description = "Enable billable S3 object-level CloudTrail data events."
+  type        = bool
+  default     = false
+}
+
+variable "enable_aws_config" {
+  description = "Enable AWS Config recorder and delivery channel; usage may incur charges."
+  type        = bool
+  default     = false
+}
+
+variable "enable_week2_guardduty" {
+  description = "Enable Amazon GuardDuty; usage may incur charges."
+  type        = bool
+  default     = false
+}
+
+variable "enable_week2_securityhub" {
+  description = "Enable AWS Security Hub standards; usage may incur charges."
+  type        = bool
+  default     = false
+}
+
+variable "enable_week2_detective" {
+  description = "Enable Amazon Detective; usage may incur charges."
+  type        = bool
+  default     = false
+}
+
+variable "enable_week2_inspector" {
+  description = "Enable Amazon Inspector; usage may incur charges."
+  type        = bool
+  default     = false
+}
+
+variable "enable_week2_macie" {
+  description = "Enable Amazon Macie; usage may incur charges."
+  type        = bool
+  default     = false
 }
 
 variable "elb_logs_prefix" {
