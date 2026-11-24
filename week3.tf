@@ -43,7 +43,7 @@ data "aws_ami" "week3_al2023" {
 
 locals {
   week3_vpc_id               = var.vpc_id != "" ? var.vpc_id : data.aws_vpc.week3_default[0].id
-  week3_subnet_id            = data.aws_subnets.week3_target.ids[0]
+  week3_subnet_id            = sort(data.aws_subnets.week3_target.ids)[0]
   week3_evidence_bucket_name = "${var.project_name}-ir-evidence-${local.suffix}"
   week3_sim_s3_bucket_name   = "${var.project_name}-ir-sim-public-${local.suffix}"
 }
@@ -120,6 +120,8 @@ resource "aws_vpc_security_group_egress_rule" "week3_forensic_workstation_https"
 }
 
 # Emergency Quarantine Network ACL (Stateless Subnet-Level Containment).
+# Intentionally NOT associated with a subnet: associate it manually during an incident
+# only after confirming the affected subnet, because an association impacts every resource in it.
 resource "aws_network_acl" "week3_quarantine" {
   vpc_id = local.week3_vpc_id
 
@@ -154,7 +156,14 @@ resource "aws_network_acl_rule" "week3_quarantine_deny_egress" {
 # 2. Scenario 1: Compromised EC2 Simulation Lab Instance
 # ------------------------------------------------------------
 
+variable "enable_week3_lab_ec2" {
+  description = "Opt in to creating the billable Week 3 EC2 lab instance. Keep false for cost-controlled review."
+  type        = bool
+  default     = false
+}
+
 resource "aws_iam_role" "week3_lab_ec2" {
+  count = var.enable_week3_lab_ec2 ? 1 : 0
   name = "${var.project_name}-ir-lab-ec2-role"
 
   assume_role_policy = jsonencode({
@@ -168,21 +177,25 @@ resource "aws_iam_role" "week3_lab_ec2" {
 }
 
 resource "aws_iam_role_policy_attachment" "week3_lab_ec2_ssm" {
-  role       = aws_iam_role.week3_lab_ec2.name
+  count      = var.enable_week3_lab_ec2 ? 1 : 0
+  role       = aws_iam_role.week3_lab_ec2[0].name
   policy_arn = "arn:${local.partition}:iam::aws:policy/AmazonSSMManagedInstanceCore"
 }
 
 resource "aws_iam_instance_profile" "week3_lab_ec2" {
-  name = "${var.project_name}-ir-lab-ec2-profile"
-  role = aws_iam_role.week3_lab_ec2.name
+  count = var.enable_week3_lab_ec2 ? 1 : 0
+  name  = "${var.project_name}-ir-lab-ec2-profile"
+  role  = aws_iam_role.week3_lab_ec2[0].name
 }
 
 resource "aws_instance" "week3_lab_target" {
+  count                  = var.enable_week3_lab_ec2 ? 1 : 0
   ami                    = data.aws_ami.week3_al2023.id
   instance_type          = "t3.micro"
   subnet_id              = local.week3_subnet_id
   vpc_security_group_ids = [aws_security_group.week3_lab_ec2.id]
-  iam_instance_profile   = aws_iam_instance_profile.week3_lab_ec2.name
+  iam_instance_profile   = aws_iam_instance_profile.week3_lab_ec2[0].name
+  associate_public_ip_address = true
 
   metadata_options {
     http_endpoint               = "enabled"
@@ -374,6 +387,11 @@ resource "aws_iam_role" "week3_forensic_investigator" {
   })
 }
 
+resource "aws_iam_instance_profile" "week3_forensic_investigator" {
+  name = "${var.project_name}-ir-forensic-profile"
+  role = aws_iam_role.week3_forensic_investigator.name
+}
+
 resource "aws_iam_role_policy" "week3_forensic_investigator" {
   name = "${var.project_name}-ir-forensic-policy"
   role = aws_iam_role.week3_forensic_investigator.id
@@ -420,8 +438,8 @@ output "week3_target_vpc_id" {
 }
 
 output "week3_lab_ec2_instance_id" {
-  description = "Lab EC2 instance ID used for Compromised EC2 incident simulation."
-  value       = aws_instance.week3_lab_target.id
+  description = "Lab EC2 instance ID; null unless enable_week3_lab_ec2 is true."
+  value       = var.enable_week3_lab_ec2 ? aws_instance.week3_lab_target[0].id : null
 }
 
 output "week3_ir_isolation_sg_id" {
@@ -457,6 +475,11 @@ output "week3_sim_public_s3_bucket_name" {
 output "week3_forensic_evidence_bucket_name" {
   description = "S3 bucket name for preserving forensic evidence and incident logs."
   value       = aws_s3_bucket.week3_forensic_evidence.bucket
+}
+
+output "week3_forensic_investigator_instance_profile" {
+  description = "Instance profile to attach to an approved forensic workstation EC2 instance."
+  value       = aws_iam_instance_profile.week3_forensic_investigator.name
 }
 
 output "week3_forensic_investigator_role_arn" {
