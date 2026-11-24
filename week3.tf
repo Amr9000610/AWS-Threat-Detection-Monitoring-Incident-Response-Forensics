@@ -399,6 +399,11 @@ resource "aws_iam_instance_profile" "week3_forensic_investigator" {
   role = aws_iam_role.week3_forensic_investigator.name
 }
 
+resource "aws_iam_role_policy_attachment" "week3_forensic_investigator_ssm" {
+  role       = aws_iam_role.week3_forensic_investigator.name
+  policy_arn = "arn:${local.partition}:iam::aws:policy/AmazonSSMManagedInstanceCore"
+}
+
 resource "aws_iam_role_policy" "week3_forensic_investigator" {
   name = "${var.project_name}-ir-forensic-policy"
   role = aws_iam_role.week3_forensic_investigator.id
