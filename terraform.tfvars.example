@@ -2,14 +2,21 @@ aws_region   = "us-east-1"
 project_name = "aws-threat-detection"
 environment  = "lab"
 
-# Enable only after providing a real VPC ID in the same region.
-enable_vpc_flow_logs = false
-vpc_id               = ""
+# Cost-controlled defaults. Enable paid/usage-based features only when needed.
+enable_cloudtrail_s3_data_events = false
+enable_aws_config                = false
+enable_week2_guardduty           = false
+enable_week2_securityhub         = false
+enable_week2_detective           = false
+enable_week2_inspector            = false
+enable_week2_macie               = false
+enable_vpc_flow_logs              = false
+enable_s3_server_access_logging   = false
+enable_week3_lab_ec2              = false
 
-# Optional: provide an email address you control and confirm the subscription.
+vpc_id     = ""
 alert_email = ""
 
-log_retention_days        = 365
-cloudwatch_retention_days = 90
-enable_s3_server_access_logging = true
-elb_logs_prefix = "alb"
+log_retention_days        = 30
+cloudwatch_retention_days = 7
+elb_logs_prefix           = "alb"
