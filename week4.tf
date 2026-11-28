@@ -1,4 +1,3 @@
-
 # ============================================================
 # WEEK 4 - SOAR AUTOMATION & EXECUTIVE REPORTING
 # Security Hub -> EventBridge -> Lambda -> SNS
@@ -10,7 +9,6 @@
 
 # ------------------------------------------------------------
 # 1. Lambda packaging
-# Requires hashicorp/archive provider (~> 2.7)
 # ------------------------------------------------------------
 
 data "archive_file" "week4_lambda" {
@@ -27,42 +25,49 @@ from datetime import datetime, timezone
 sns = boto3.client("sns")
 
 TOPIC_ARN = os.environ["SNS_TOPIC_ARN"]
-PROJECT   = os.environ["PROJECT_NAME"]
+PROJECT = os.environ["PROJECT_NAME"]
 
 
 def handler(event, context):
-    detail = event.get("detail", {})
-    findings = detail.get("findings", [])
+    if not isinstance(event, dict):
+        event = {}
 
+    detail = event.get("detail", {})
+    if not isinstance(detail, dict):
+        detail = {}
+
+    findings = detail.get("findings", [])
     if not isinstance(findings, list):
         findings = []
 
     processed = []
-
     for finding in findings[:10]:
-        processed.append({
-            "title": finding.get("Title", "Unknown finding"),
-            "severity": finding.get("Severity", {}).get(
-                "Label", "UNKNOWN"
-            ),
-            "id": finding.get("Id", "N/A"),
-            "account": finding.get("AwsAccountId", "N/A"),
-            "region": finding.get("Region", "N/A"),
-            "resource": finding.get("Resources", [{}])[0].get(
-                "Id", "N/A"
-            )
-        })
+        if not isinstance(finding, dict):
+            continue
 
-    event_type = event.get(
-        "detail-type", "Unknown Security Event"
-    )
+        severity = finding.get("Severity")
+        if not isinstance(severity, dict):
+            severity = {}
+
+        resources = finding.get("Resources")
+        if not isinstance(resources, list):
+            resources = []
+
+        first_resource = resources[0] if resources and isinstance(resources[0], dict) else {}
+
+        processed.append({
+            "title": finding.get("Title") or "Unknown finding",
+            "severity": severity.get("Label") or "UNKNOWN",
+            "id": finding.get("Id") or "N/A",
+            "account": finding.get("AwsAccountId") or "N/A",
+            "region": finding.get("Region") or "N/A",
+            "resource": first_resource.get("Id") or "N/A"
+        })
 
     message = {
         "project": PROJECT,
-        "event_type": event_type,
-        "timestamp": datetime.now(
-            timezone.utc
-        ).isoformat(),
+        "event_type": event.get("detail-type") or "Unknown Security Event",
+        "timestamp": datetime.now(timezone.utc).isoformat(),
         "finding_count": len(findings),
         "findings": processed,
         "status": "REQUIRES_SECURITY_TEAM_REVIEW",
@@ -71,12 +76,11 @@ def handler(event, context):
 
     sns.publish(
         TopicArn=TOPIC_ARN,
-        Subject="Security Incident Alert - " + PROJECT,
-        Message=json.dumps(message, indent=2)
+        Subject=("Security Incident Alert - " + PROJECT)[:100],
+        Message=json.dumps(message, indent=2, default=str)
     )
 
-    print(json.dumps(message))
-
+    print(json.dumps(message, default=str))
     return {
         "statusCode": 200,
         "body": json.dumps({
@@ -133,10 +137,8 @@ resource "aws_iam_role_policy" "week4_lambda" {
         Resource = "${aws_cloudwatch_log_group.week4_lambda.arn}:*"
       },
       {
-        Effect = "Allow"
-        Action = [
-          "sns:Publish"
-        ]
+        Effect   = "Allow"
+        Action   = ["sns:Publish"]
         Resource = aws_sns_topic.security_alerts.arn
       }
     ]
@@ -259,8 +261,45 @@ resource "aws_lambda_permission" "week4_custom_action" {
 
 # ------------------------------------------------------------
 # 7. SSM Automation - Human Approval Runbook
-# Approval only. No automatic resource modification.
+# The approver ARNs are supplied when the Automation is started.
 # ------------------------------------------------------------
+
+resource "aws_sns_topic" "week4_approval" {
+  name = "Automation-${var.project_name}-incident-approval"
+}
+
+data "aws_iam_policy_document" "week4_approval_sns" {
+  statement {
+    sid    = "AllowSSMAutomationToPublishApprovalNotifications"
+    effect = "Allow"
+
+    principals {
+      type        = "Service"
+      identifiers = ["ssm.amazonaws.com"]
+    }
+
+    actions   = ["sns:Publish"]
+    resources = [aws_sns_topic.week4_approval.arn]
+
+    condition {
+      test     = "StringEquals"
+      variable = "AWS:SourceAccount"
+      values   = [data.aws_caller_identity.current.account_id]
+    }
+  }
+}
+
+resource "aws_sns_topic_policy" "week4_approval" {
+  arn    = aws_sns_topic.week4_approval.arn
+  policy = data.aws_iam_policy_document.week4_approval_sns.json
+}
+
+resource "aws_sns_topic_subscription" "week4_approval_email" {
+  count     = var.alert_email == "" ? 0 : 1
+  topic_arn = aws_sns_topic.week4_approval.arn
+  protocol  = "email"
+  endpoint  = var.alert_email
+}
 
 resource "aws_ssm_document" "week4_approval" {
   name            = "${var.project_name}-incident-approval"
@@ -276,6 +315,10 @@ resource "aws_ssm_document" "week4_approval" {
         type        = "String"
         description = "Description of the incident requiring approval"
       }
+      Approvers = {
+        type        = "StringList"
+        description = "IAM user or role ARNs authorized to approve this incident"
+      }
     }
 
     mainSteps = [
@@ -283,7 +326,8 @@ resource "aws_ssm_document" "week4_approval" {
         name   = "RequestHumanApproval"
         action = "aws:approve"
         inputs = {
-          NotificationArn      = aws_sns_topic.security_alerts.arn
+          Approvers            = "{{ Approvers }}"
+          NotificationArn      = aws_sns_topic.week4_approval.arn
           Message              = "Security incident approval required: {{ IncidentDescription }}"
           MinRequiredApprovals = "1"
         }
@@ -291,6 +335,8 @@ resource "aws_ssm_document" "week4_approval" {
       }
     ]
   })
+
+  depends_on = [aws_sns_topic_policy.week4_approval]
 }
 
 # ------------------------------------------------------------
@@ -320,6 +366,11 @@ output "week4_custom_action_id" {
 output "week4_ssm_approval_document" {
   description = "SSM incident approval runbook"
   value       = aws_ssm_document.week4_approval.name
+}
+
+output "week4_approval_topic_arn" {
+  description = "SNS topic used exclusively for SSM approval notifications"
+  value       = aws_sns_topic.week4_approval.arn
 }
 
 output "week4_lambda_log_group" {
